@@ -112,7 +112,12 @@ class River2(BaseInternalDevice):
             VoltSensorEntity(client, self, "bms_bmsStatus.vol", const.BATTERY_VOLT, False, auto_enable=True)
             .attr("bms_bmsStatus.minCellVol", const.ATTR_MIN_CELL_VOLT, 0)
             .attr("bms_bmsStatus.maxCellVol", const.ATTR_MAX_CELL_VOLT, 0),
-            VoltSensorEntity(client, self, "bmsMaster.vol", const.BATTERY_VOLT, False, auto_enable=True)
+            # bmsMaster.vol is reported in millivolts on this hardware variant
+            # (confirmed: raw ~29000-29700 matches an 8S LFP pack at ~3.6-3.7V/cell),
+            # unlike bms_bmsStatus.vol above which is assumed to already be whole volts -
+            # MilliVoltSensorEntity's suggested_unit_of_measurement handles the mV->V
+            # display conversion, same as the cell-level volt sensors below.
+            MilliVoltSensorEntity(client, self, "bmsMaster.vol", const.BATTERY_VOLT, False, auto_enable=True)
             .attr("bmsMaster.minCellVol", const.ATTR_MIN_CELL_VOLT, 0)
             .attr("bmsMaster.maxCellVol", const.ATTR_MAX_CELL_VOLT, 0),
             MilliVoltSensorEntity(
