@@ -1,9 +1,11 @@
+from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 
 from custom_components.ecoflow_cloud.api import EcoflowApiClient
+from custom_components.ecoflow_cloud.binary_sensor import MiscBinarySensorEntity
 from custom_components.ecoflow_cloud.devices import BaseInternalDevice, const
 from custom_components.ecoflow_cloud.number import (
     BatteryBackupLevel,
@@ -330,6 +332,15 @@ class River2(BaseInternalDevice):
                 const.AC_TIMEOUT_OPTIONS,
                 lambda value: {"moduleType": 5, "operateType": "acStandby", "params": {"standbyMins": value}},
             ),
+        ]
+
+    def binary_sensors(self, client: EcoflowApiClient) -> list[BinarySensorEntity]:
+        return [
+            # Read-only: confirmed via a live before/after diagnostics diff while
+            # toggling "AC Slow Charging" in the app (issue #918 discussion), but
+            # no verified write command exists for this device generation - see
+            # the switches() comment for why this isn't a switch.
+            MiscBinarySensorEntity(client, self, "inv.cfgAcChgModeFlg", const.AC_SLOW_CHARGE),
         ]
 
     def _status_sensor(self, client: EcoflowApiClient) -> StatusSensorEntity:
